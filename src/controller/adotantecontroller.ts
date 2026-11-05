@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import adotanteRepository from '../repositories/adotanteRepository';
 import adotanteEntity from '../entities/adotanteEntity';
 import EnderecoEntity from '../entities/endereco';
+import { tipoRequestBodyAdotante, tipoRequestParamsAdotante, tipoResponseBodyAdotante } from '../tipos/tipoAdotante';
 
 let id = 0;
 function geraId() {
@@ -12,7 +13,8 @@ function geraId() {
 export default class adotanteController{
     constructor(private repository: adotanteRepository) {}
 
-async criaAdotante(req:Request, res:Response) {
+async criaAdotante(req:Request<{}, {}, tipoRequestBodyAdotante>
+    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
   try {
     const { nome, celular, endereco, foto, senha } = <adotanteEntity>req.body;
 
@@ -25,23 +27,32 @@ async criaAdotante(req:Request, res:Response) {
     );
 
     await this.repository.criaAdotante(novoAdotante);
-    return res.status(201).json(novoAdotante);
+    return res.status(201).json({ data: { id: novoAdotante.id, nome: novoAdotante.nome, celular: novoAdotante.celular } });
     } catch (error) {
-    return res.status(500).json({ error: 'Erro ao criar o adotante' });
+    return res.status(500).json({errorMessage: 'Erro ao criar o adotante' });
     }
     }
 
-    async listaAdotantes(req:Request, res:Response) {
+    async listaAdotantes(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
+    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
         try{
             const listaDeAdotantes = await this.repository.listaAdotante();
-            return res.status(200).json(listaDeAdotantes);
+            const data = listaDeAdotantes.map((adotante) => {
+                return {
+                    id: adotante.id,
+                    nome: adotante.nome,
+                    celular: adotante.celular
+                };
+            });
+            return res.status(200).json({ data: data });
             } catch(error){
-            return res.status(500).json({error: "erro ao obter lista de adotantes"});
+            return res.status(500).json({errorMessage: "erro ao obter lista de adotantes"});
         };
     }
 
 
-    async atualizaAdotante(req:Request, res:Response) {
+    async atualizaAdotante(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
+    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
         try{
             const { id } = req.params;
             const { success, message } = await this.repository.atualizaAdotante(
@@ -50,35 +61,37 @@ async criaAdotante(req:Request, res:Response) {
             );
 
             if(!success){
-                return res.status(400).json({error: message})
+                return res.status(400).json({errorMessage: message})
             } else {
-                return res.status(200).json({message: "Dados do adotante atualizados com sucesso!"})
+                return res.status(200).json({errorMessage: "Dados do adotante atualizados com sucesso!"})
             }
 
         } catch(error){
-            return res.status(500).json({error: "erro ao atualizar dados do adotante"});
+            return res.status(500).json({errorMessage: "erro ao atualizar dados do adotante"});
         };
     }
 
-    async deletaAdotante(req:Request, res:Response) {
+    async deletaAdotante(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
+    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
         try {
              const { id } = req.params;
             const {success, message} = await this.repository.deletaAdotante(Number(id));
             if (!success){
-            return res.status(404).json({ message: "adotante nao encontrado! Verifique o id" });
+            return res.status(404).json({ errorMessage: "adotante nao encontrado! Verifique o id" });
             } else {
-            return res.status(204).json({ message: "adotante deletado com sucesso!"});
+            return res.status(204).json({ errorMessage: "adotante deletado com sucesso!"});
             }
 
         } catch (error){
-            return res.status(500).json({error: "erro ao deletar o adotante"});
+            return res.status(500).json({errorMessage: "erro ao deletar o adotante"});
         };
     }
 
-    async atualizaEnderecoAdotante(req:Request, res:Response) {
+    async atualizaEnderecoAdotante(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
+    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
         try {
              const { id } = req.params;
-            const {success, message} = await this.repository.atualizaEnderecoAdotante(Number(id), req.body as EnderecoEntity);
+            const {success, message} = await this.repository.atualizaEnderecoAdotante(Number(id), req.body.endereco as EnderecoEntity);
             if (!success){
             return res.status(404).json({ success: false, message: "adotante nao encontrado! Verifique o id" });
             } else {
@@ -86,7 +99,7 @@ async criaAdotante(req:Request, res:Response) {
             }
 
         } catch (error){
-            return res.status(500).json({error: "erro ao deletar o adotante"});
+            return res.status(500).json({errorMessage: "erro ao deletar o adotante"});
         };
     }
 }
