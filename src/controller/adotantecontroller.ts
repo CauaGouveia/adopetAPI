@@ -3,21 +3,15 @@ import adotanteRepository from '../repositories/adotanteRepository';
 import adotanteEntity from '../entities/adotanteEntity';
 import EnderecoEntity from '../entities/endereco';
 import { tipoRequestBodyAdotante, tipoRequestParamsAdotante, tipoResponseBodyAdotante } from '../tipos/tipoAdotante';
-
-let id = 0;
-function geraId() {
-  id = id++;
-  return id;
-};
+import * as yup from 'yup';
 
 export default class adotanteController{
     constructor(private repository: adotanteRepository) {}
 
 async criaAdotante(req:Request<{}, {}, tipoRequestBodyAdotante>
-    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
+    , res:Response<tipoResponseBodyAdotante | { error: Record<string, string> }>) {
   try {
     const { nome, celular, endereco, foto, senha } = <adotanteEntity>req.body;
-
     const novoAdotante = new adotanteEntity(
       nome,
       senha,
@@ -41,7 +35,8 @@ async criaAdotante(req:Request<{}, {}, tipoRequestBodyAdotante>
                 return {
                     id: adotante.id,
                     nome: adotante.nome,
-                    celular: adotante.celular
+                    celular: adotante.celular,
+                    endereco: adotante.endereco !== null ? adotante.endereco : undefined
                 };
             });
             return res.status(200).json({ data: data });
@@ -87,11 +82,11 @@ async criaAdotante(req:Request<{}, {}, tipoRequestBodyAdotante>
         };
     }
 
-    async atualizaEnderecoAdotante(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
+    async atualizaEnderecoAdotante(req:Request<tipoRequestParamsAdotante, {}, EnderecoEntity>
     , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
         try {
              const { id } = req.params;
-            const {success, message} = await this.repository.atualizaEnderecoAdotante(Number(id), req.body.endereco as EnderecoEntity);
+            const {success, message} = await this.repository.atualizaEnderecoAdotante(Number(id), req.body);
             if (!success){
             return res.status(404).json({ success: false, message: "adotante nao encontrado! Verifique o id" });
             } else {

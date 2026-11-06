@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import EnderecoEntity from "../entities/endereco";
 import petEntity from "./petEntity";
+import { hashPassword } from "../utils/hash";
 
 @Entity()
 export default class AdotanteEntity {
@@ -35,4 +36,14 @@ export default class AdotanteEntity {
     this.celular = celular;
     this.endereco = endereco;
   }
+
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  private async hashPassword(senha: string) {
+    this.senha = hashPassword(this.senha);
+  }
+
+
+
 }
