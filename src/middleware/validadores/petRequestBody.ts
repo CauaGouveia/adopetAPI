@@ -6,7 +6,7 @@ import enumEspecie from '../../enum/enumEspecie';
 import enumPorte from '../../enum/enumPorte';
 
 
-const esquemaBodyPet: yup.ObjectSchema<Omit<tipoRequestBodyPet, "adotante">>= yup.object().shape({
+const esquemaBodyPet: yup.ObjectSchema<Omit<tipoRequestBodyPet, "adotante" | "abrigo">>= yup.object().shape({
     nome:yup.string().defined().required("O nome é obrigatório"),
     especie:yup.string().oneOf(Object.values(enumEspecie), "A especie deve ser cachorro ou gato").defined().required("A especie é obrigatória"),
     porte:yup.string().oneOf(Object.values(enumPorte), "O porte deve ser pequeno, medio ou grande" ).defined().required("O porte é obrigatório"),

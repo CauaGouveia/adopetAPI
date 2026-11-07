@@ -15,7 +15,7 @@ export default class petcontroller {
         
         const novoPet =  new petEntity(nome, especie, dataDeNascimento, adotado, porte);
         await this.repository.criaPet(novoPet);
-        return res.status(201).json({ data: { id: novoPet.id, nome, porte, especie } });
+        return res.status(201).json({ data: { id: novoPet.id, nome, porte, especie }});
     
     }
 
@@ -28,7 +28,8 @@ export default class petcontroller {
                 nome: pet.nome,
                 porte: pet.porte !== null ? pet.porte : undefined,
                 especie: pet.especie,
-                adotado: pet.adotado
+                adotado: pet.adotado,
+                abrigo: pet.abrigo ? { id: pet.abrigo.id, nome: pet.abrigo.nome } : undefined
             };
         });
         return res.status(200).json({ data: data });
