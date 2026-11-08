@@ -6,6 +6,7 @@ import petRepository from '../repositories/petRepository';
 import EnderecoEntity from '../entities/endereco';
 import * as yup from 'yup';
 import { tipoRequestParamsAbrigo, tipoRequestBodyAbrigo, tipoResponseBodyAbrigo } from '../tipos/tipoAbrigo';
+import { RequisicaoInvalida } from '../utils/manipulaErros';
 
 export default class abrigoController{
     constructor(private abrigoRepository: abrigoRepository, private petRepository: petRepository) {
@@ -46,7 +47,7 @@ async criaAbrigo(req:Request<tipoRequestParamsAbrigo, {}, tipoRequestBodyAbrigo>
             });
             return res.status(200).json({ data: data });
             } catch(error){
-            return res.status(500).json({errorMessage: "erro ao obter lista de abrigos"});
+            throw new RequisicaoInvalida("erro ao obter lista de abrigos");
         };
     }
 
@@ -54,13 +55,13 @@ async criaAbrigo(req:Request<tipoRequestParamsAbrigo, {}, tipoRequestBodyAbrigo>
     async atualizaAbrigo(req:Request<tipoRequestParamsAbrigo, {}, tipoRequestBodyAbrigo>, res:Response<tipoResponseBodyAbrigo>) {
         try{
             const { id } = req.params;
-            const { success, message } = await this.abrigoRepository.atualizaAbrigo(
+            const { success } = await this.abrigoRepository.atualizaAbrigo(
                 Number(id),
                 req.body as abrigoEntity
             );
 
             if(!success){
-                return res.status(400).json({errorMessage: message})
+                throw new RequisicaoInvalida("erro ao atualizar dados do abrigo")
             } else {
                 return res.status(200).json({errorMessage: "Dados do abrigo atualizados com sucesso!"})
             }
@@ -71,32 +72,29 @@ async criaAbrigo(req:Request<tipoRequestParamsAbrigo, {}, tipoRequestBodyAbrigo>
     }
 
     async deletaAbrigo(req:Request<tipoRequestParamsAbrigo, {}, tipoRequestBodyAbrigo>, res:Response<tipoResponseBodyAbrigo>) {
-        try {
-             const { id } = req.params;
-            const {success, message} = await this.abrigoRepository.deletaAbrigo(Number(id));
+            const { id } = req.params;
+            const {success } = await this.abrigoRepository.deletaAbrigo(Number(id));
             if (!success){
-            return res.status(404).json({ errorMessage: "abrigo nao encontrado! Verifique o id" });
+            throw new RequisicaoInvalida("erro ao deletar o abrigo");
             } else {
             return res.status(204).json({ message: "abrigo deletado com sucesso!"});
             }
 
-        } catch (error){
-            return res.status(500).json({errorMessage: "erro ao deletar o abrigo"});
-        };
+    
     }
 
     async atualizaEnderecoAbrigo(req:Request<tipoRequestParamsAbrigo, {}, EnderecoEntity>, res:Response<tipoResponseBodyAbrigo>) {
         try {
              const { id } = req.params;
-            const {success, message} = await this.abrigoRepository.atualizaEnderecoAbrigo(Number(id), req.body);
+            const {success} = await this.abrigoRepository.atualizaEnderecoAbrigo(Number(id), req.body);
             if (!success){
-            return res.status(404).json({ success: false, message: "abrigo nao encontrado! Verifique o id" });
+            throw new RequisicaoInvalida("erro ao atualizar o endereco do abrigo");
             } else {
             return res.status(204).json({ success: true, message: "endereco do abrigo alterado com sucesso!"});
             }
 
         } catch (error){
-            return res.status(500).json({errorMessage: "erro ao atualizar o endereco do abrigo"});
+            throw new RequisicaoInvalida("erro ao atualizar o endereco do abrigo");
         };
     }
 

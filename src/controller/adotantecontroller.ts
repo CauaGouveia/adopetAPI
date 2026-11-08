@@ -4,6 +4,7 @@ import adotanteEntity from '../entities/adotanteEntity';
 import EnderecoEntity from '../entities/endereco';
 import { tipoRequestBodyAdotante, tipoRequestParamsAdotante, tipoResponseBodyAdotante } from '../tipos/tipoAdotante';
 import * as yup from 'yup';
+import { RequisicaoInvalida } from '../utils/manipulaErros';
 
 export default class adotanteController{
     constructor(private repository: adotanteRepository) {}
@@ -46,25 +47,24 @@ async criaAdotante(req:Request<{}, {}, tipoRequestBodyAdotante>
     }
 
 
-    async atualizaAdotante(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
-    , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {
-        try{
-            const { id } = req.params;
-            const { success, message } = await this.repository.atualizaAdotante(
-                Number(id),
-                req.body as adotanteEntity
-            );
+    async atualizaAdotante(req: Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>,
+    res: Response<tipoResponseBodyAdotante>) {
+    try {
+        const { id } = req.params;
+        const { success } = await this.repository.atualizaAdotante(
+            Number(id),
+            req.body as adotanteEntity
+        );
 
-            if(!success){
-                return res.status(400).json({errorMessage: message})
-            } else {
-                return res.status(200).json({errorMessage: "Dados do adotante atualizados com sucesso!"})
-            }
-
-        } catch(error){
-            return res.status(500).json({errorMessage: "erro ao atualizar dados do adotante"});
-        };
+        if (success) {
+            return res.status(200).json({ errorMessage: "Dados do adotante atualizados com sucesso!" });
+        } else {
+            throw new RequisicaoInvalida("adotante nao encontrado! Verifique o id");
+        }
+    } catch (error) {
+        return res.status(500).json({ errorMessage: "erro ao atualizar dados do adotante" });
     }
+}
 
     async deletaAdotante(req:Request<tipoRequestParamsAdotante, {}, tipoRequestBodyAdotante>
     , res:Response<tipoResponseBodyAdotante | { errorMessage: string }>) {

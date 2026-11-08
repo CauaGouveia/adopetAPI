@@ -25,7 +25,7 @@ export default class adotanteRepository implements InterfaceAdotanteRepository {
             return await this.repository.find();
         }
 
-        async atualizaAdotante(id: number, newData: AdotanteEntity): Promise<{success: boolean; message?: string}>  {
+        async atualizaAdotante(id: number, newData: AdotanteEntity) {
                 const adotanteToBeUpdated = await this.repository.findOne({where: {id}});
                     if (!adotanteToBeUpdated){
                         throw new RecursoNaoEncontrado("adotante nao encontrado");
